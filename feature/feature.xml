@@ -2,7 +2,7 @@
 <feature
       id="ru.edt.gitremotedisabler.feature"
       label="Git Remote Disabler"
-      version="1.0.3"
+      version="1.0.4"
       provider-name="edt-plugins">
 
    <description>

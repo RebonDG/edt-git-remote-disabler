@@ -50,6 +50,8 @@ public class ToggleRemoteHandler extends AbstractHandler implements IElementUpda
 
 	private static final String ICON_DISABLE = "icons/obj16/remote_disabled.png"; //$NON-NLS-1$
 	private static final String ICON_ENABLE = "icons/obj16/remote_enabled.png"; //$NON-NLS-1$
+	/** Нейтральная иконка: состояние ещё неизвестно. */
+	private static final String ICON_NEUTRAL = "icons/obj16/remote.png"; //$NON-NLS-1$
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -91,6 +93,8 @@ public class ToggleRemoteHandler extends AbstractHandler implements IElementUpda
 	public void updateElement(UIElement element, @SuppressWarnings("rawtypes") Map parameters) {
 		RepositoryTreeNode<?> node = getSelectedRemoteNode(getSelection(element));
 		if (node == null) {
+			// Выделение ещё не доступно — оставляем нейтральную иконку и
+			// подпись по умолчанию из plugin.xml, чтобы пункт не был пустым.
 			return;
 		}
 		String remoteName = String.valueOf(node.getObject());
@@ -100,6 +104,7 @@ public class ToggleRemoteHandler extends AbstractHandler implements IElementUpda
 		} catch (RuntimeException e) {
 			// Меню не должно падать из-за недоступного .git/config.
 			Activator.log(e);
+			setIcon(element, ICON_NEUTRAL);
 			return;
 		}
 
@@ -121,14 +126,35 @@ public class ToggleRemoteHandler extends AbstractHandler implements IElementUpda
 		}
 	}
 
+	/**
+	 * Выделение для построения меню. Берётся из нескольких источников по
+	 * порядку: у самого элемента меню, затем у активного окна и всех окон
+	 * workbench. При первом открытии меню сервис элемента может быть ещё не
+	 * готов, поэтому нужны запасные варианты.
+	 */
 	private static ISelection getSelection(UIElement element) {
-		if (element == null) {
-			return null;
+		if (element != null && element.getServiceLocator() != null) {
+			ISelectionService service = element.getServiceLocator()
+					.getService(ISelectionService.class);
+			if (service != null && service.getSelection() != null) {
+				return service.getSelection();
+			}
 		}
-		ISelectionService service = element.getServiceLocator() != null
-				? element.getServiceLocator().getService(ISelectionService.class)
-				: null;
-		return service != null ? service.getSelection() : null;
+		try {
+			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+			if (window != null && window.getSelectionService() != null
+					&& window.getSelectionService().getSelection() != null) {
+				return window.getSelectionService().getSelection();
+			}
+			for (IWorkbenchWindow w : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+				if (w.getSelectionService() != null && w.getSelectionService().getSelection() != null) {
+					return w.getSelectionService().getSelection();
+				}
+			}
+		} catch (IllegalStateException e) {
+			// Workbench закрывается.
+		}
+		return null;
 	}
 
 	private void startDisable(Shell shell, Repository repository, String remoteName, int branches) {
