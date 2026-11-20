@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Git Remote Disabler
+Bundle-SymbolicName: ru.edt.gitremotedisabler;singleton:=true
+Bundle-Version: 1.0.3
+Bundle-Vendor: edt-plugins
+Bundle-Activator: ru.edt.gitremotedisabler.Activator
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-Localization: plugin
+Require-Bundle: org.eclipse.core.runtime;bundle-version="3.26.0",
+ org.eclipse.core.commands,
+ org.eclipse.core.expressions,
+ org.eclipse.jface,
+ org.eclipse.ui,
+ org.eclipse.ui.workbench,
+ org.eclipse.ui.navigator,
+ org.eclipse.osgi,
+ org.eclipse.egit.ui;bundle-version="6.8.0",
+ org.eclipse.egit.core;bundle-version="6.8.0",
+ org.eclipse.jgit;bundle-version="6.8.0"

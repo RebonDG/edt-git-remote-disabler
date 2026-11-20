@@ -1,0 +1,9 @@
+# Всё, что создаётся сборкой.
+build/
+
+# Локальная память DSH.
+.dsh-meow/
+
+# Служебное Windows.
+Thumbs.db
+desktop.ini

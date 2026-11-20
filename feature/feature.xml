@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="ru.edt.gitremotedisabler.feature"
+      label="Git Remote Disabler"
+      version="1.0.3"
+      provider-name="edt-plugins">
+
+   <description>
+      Отключение и включение удалённого репозитория в дереве Git-репозиториев 1C:EDT.
+   </description>
+
+   <copyright>
+      Распространяется по лицензии MIT.
+   </copyright>
+
+   <license>
+      MIT License. Полный текст — в файле LICENSE репозитория.
+   </license>
+
+   <plugin
+         id="ru.edt.gitremotedisabler"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

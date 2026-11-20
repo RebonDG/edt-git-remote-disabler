@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   site.xml используется вместо category.xml: p2 формирует id категории из
+   category-def/@name, тогда как для category.xml id получается из локального
+   пути к файлу (file:/...). Локальный путь в опубликованных метаданных
+   недопустим.
+-->
+<site>
+   <feature url="features/ru.edt.gitremotedisabler.feature_1.0.3.jar"
+            id="ru.edt.gitremotedisabler.feature"
+            version="1.0.3">
+      <category name="gitremote"/>
+   </feature>
+   <category-def name="gitremote" label="Git Remote Disabler">
+      <description>Отключение и включение удалённого репозитория в дереве Git-репозиториев.</description>
+   </category-def>
+</site>
