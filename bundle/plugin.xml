@@ -43,7 +43,7 @@
             locationURI="popup:org.eclipse.egit.ui.RepositoriesView?before=org.eclipse.ui.edit.delete">
          <command
                commandId="ru.edt.gitremotedisabler.toggleRemote"
-               icon="icons/obj16/remote.png"
+               icon="icons/obj16/remote_disabled.png"
                label="Отключить удаленный репозиторий"
                style="push">
             <visibleWhen

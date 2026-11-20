@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Git Remote Disabler
 Bundle-SymbolicName: ru.edt.gitremotedisabler;singleton:=true
-Bundle-Version: 1.0.4
+Bundle-Version: 1.0.5
 Bundle-Vendor: edt-plugins
 Bundle-Activator: ru.edt.gitremotedisabler.Activator
 Bundle-ActivationPolicy: lazy

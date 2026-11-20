@@ -127,28 +127,68 @@ public class ToggleRemoteHandler extends AbstractHandler implements IElementUpda
 	}
 
 	/**
-	 * Выделение для построения меню. Берётся из нескольких источников по
-	 * порядку: у самого элемента меню, затем у активного окна и всех окон
-	 * workbench. При первом открытии меню сервис элемента может быть ещё не
-	 * готов, поэтому нужны запасные варианты.
+	 * Выделение для построения меню.
+	 *
+	 * Главный источник — выделение самого представления репозиториев. Оно
+	 * актуально даже когда представление неактивно (правый клик по неактивному
+	 * view): меню строится до активации, и глобальный ISelectionService в этот
+	 * момент отдаёт чужое выделение или null. Именно из-за этого иконка при
+	 * первом открытии не соответствовала состоянию.
 	 */
 	private static ISelection getSelection(UIElement element) {
+		// 1. Выделение прямо из представления Git Repositories.
+		ISelection fromView = getRepositoriesViewSelection();
+		if (fromView != null && !fromView.isEmpty()) {
+			return fromView;
+		}
+
+		// 2. Сервис выделения, привязанный к элементу меню.
 		if (element != null && element.getServiceLocator() != null) {
 			ISelectionService service = element.getServiceLocator()
 					.getService(ISelectionService.class);
-			if (service != null && service.getSelection() != null) {
+			if (service != null && service.getSelection() != null
+					&& !service.getSelection().isEmpty()) {
 				return service.getSelection();
 			}
 		}
+
+		// 3. Активное окно и остальные окна workbench.
 		try {
 			IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 			if (window != null && window.getSelectionService() != null
-					&& window.getSelectionService().getSelection() != null) {
+					&& window.getSelectionService().getSelection() != null
+					&& !window.getSelectionService().getSelection().isEmpty()) {
 				return window.getSelectionService().getSelection();
 			}
 			for (IWorkbenchWindow w : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-				if (w.getSelectionService() != null && w.getSelectionService().getSelection() != null) {
+				if (w.getSelectionService() != null
+						&& w.getSelectionService().getSelection() != null
+						&& !w.getSelectionService().getSelection().isEmpty()) {
 					return w.getSelectionService().getSelection();
+				}
+			}
+		} catch (IllegalStateException e) {
+			// Workbench закрывается.
+		}
+		return null;
+	}
+
+	/** Выделение в любом открытом представлении Git-репозиториев. */
+	private static ISelection getRepositoriesViewSelection() {
+		try {
+			for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+				for (IWorkbenchPage page : window.getPages()) {
+					IViewPart view = page.findView(RepositoriesView.VIEW_ID);
+					if (view == null) {
+						continue;
+					}
+					ISelection selection = view.getSite() != null
+							&& view.getSite().getSelectionProvider() != null
+									? view.getSite().getSelectionProvider().getSelection()
+									: null;
+					if (selection != null && !selection.isEmpty()) {
+						return selection;
+					}
 				}
 			}
 		} catch (IllegalStateException e) {
