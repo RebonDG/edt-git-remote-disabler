@@ -6,9 +6,9 @@
    недопустим.
 -->
 <site>
-   <feature url="features/ru.edt.gitremotedisabler.feature_1.0.5.jar"
+   <feature url="features/ru.edt.gitremotedisabler.feature_1.0.6.jar"
             id="ru.edt.gitremotedisabler.feature"
-            version="1.0.5">
+            version="1.0.6">
       <category name="gitremote"/>
    </feature>
    <category-def name="gitremote" label="Git Remote Disabler">

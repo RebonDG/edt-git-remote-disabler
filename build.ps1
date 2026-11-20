@@ -96,7 +96,11 @@ Write-Host "Исходников: $($sources.Count)"
 function To-JavacPath([string]$p) { $p.Replace('\', '/') }
 
 $argFile = Join-Path $root 'build\javac.args'
-$lines = @('-d', "`"$(To-JavacPath $outDir)`"", '-encoding', 'UTF-8', '-proc:none', '-nowarn')
+# --release 17 обязателен: без него javac 25 пишет class-файлы версии 69
+# (Java 25), и плагин не поставится в среду, где нет osgi.ee JavaSE-25/21.
+# Целевой уровень согласован с Bundle-RequiredExecutionEnvironment: JavaSE-17.
+$lines = @('-d', "`"$(To-JavacPath $outDir)`"", '-encoding', 'UTF-8', '-proc:none', '-nowarn',
+    '--release', '17')
 $lines += "-classpath `"$(To-JavacPath $cp)`""
 $lines += $sources | ForEach-Object { "`"$(To-JavacPath $_)`"" }
 Set-Content -Path $argFile -Value ($lines -join "`n") -Encoding UTF8
@@ -105,7 +109,10 @@ Set-Content -Path $argFile -Value ($lines -join "`n") -Encoding UTF8
 if ($LASTEXITCODE -ne 0) { throw "Компиляция не удалась (код $LASTEXITCODE)" }
 
 # Собираем содержимое бандла.
+# $stage обязательно чистится: иначе классы удалённых исходников остаются
+# в каталоге от прошлых сборок и попадают в jar.
 $stage = Join-Path $root 'build\bundle'
+if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $stage | Out-Null
 Copy-Item -Path (Join-Path $outDir '*') -Destination $stage -Recurse -Force
 Copy-Item -Path (Join-Path $bundle 'META-INF') -Destination $stage -Recurse -Force
@@ -141,3 +148,17 @@ try {
 Write-Host ""
 Write-Host "Готово: $jarPath"
 Write-Host ("Размер: {0:N0} байт" -f (Get-Item $jarPath).Length)
+
+# Проверка: все классы должны быть не новее целевой версии (Java 17 = major 61).
+# Класс с большей версией сделает бандл неустановимым в чужой среде.
+$maxMajor = 61
+$bad = @()
+Get-ChildItem $stage -Recurse -Filter '*.class' | ForEach-Object {
+    $bytes = [System.IO.File]::ReadAllBytes($_.FullName)
+    $major = $bytes[6] * 256 + $bytes[7]
+    if ($major -gt $maxMajor) { $bad += "$($_.Name) (major $major)" }
+}
+if ($bad.Count -gt 0) {
+    throw ("Классы новее Java 17 — плагин не установится в чужой среде:`n  " + ($bad -join "`n  "))
+}
+Write-Host "Версия классов: Java 17 (major 61) — ок"
